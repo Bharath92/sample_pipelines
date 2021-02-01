@@ -1,0 +1,89 @@
+resources:
+#   - name: git
+#     type: GitRepo
+#     configuration:
+#       path: bharath92/sample-runSh
+#       gitProvider: github
+#       branches:
+#         include: master 
+  - name: cron
+    type: CronTrigger
+    configuration:
+      interval: '*/2 * * *'
+
+pipelines:
+  - name: basic1
+    steps:
+      - name: basic
+        type: Bash
+        configuration:
+          affinityGroup: foo
+          runtime:
+            type: host
+        execution:
+          onExecute:
+            - sleep 2m
+      - name: basicparallel
+        type: Bash
+        configuration:
+          inputSteps:
+            - name: basic
+          affinityGroup: foo
+          runtime:
+            type: host
+        execution:
+          onExecute:
+            - sleep 1m
+      - name: basic2
+        type: Bash
+        configuration:
+          affinityGroup: foo
+#           inputResources:
+#             - name: git
+          inputSteps:
+            - name: basic
+          runtime:
+            type: host
+        execution:
+          onExecute:
+            - printenv
+            - sleep 3m
+      - name: basic3
+        type: Bash
+        configuration:
+          affinityGroup: foo
+          outputResources:
+            - name: cron
+          inputSteps:
+            - name: basic2
+          runtime:
+            type: host
+        execution:
+          onExecute:
+            - printenv
+            - write_output cron "foo=$run_number"
+            - sleep 1m
+      - name: basic4
+        type: Bash
+        configuration:
+          affinityGroup: foo
+          inputSteps:
+            - name: basic3
+          runtime:
+            type: host
+        execution:
+          onExecute:
+            - printenv
+            - sleep 1m
+      - name: basic5
+        type: Bash
+        configuration:
+          affinityGroup: foo
+          inputSteps:
+            - name: basic4
+          runtime:
+            type: host
+        execution:
+          onExecute:
+            - printenv
+            - sleep 1m
